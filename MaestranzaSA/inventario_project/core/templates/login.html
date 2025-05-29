@@ -1,0 +1,55 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <script src="{% static 'scripts/credentials.js' %}" defer></script>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <h2>Iniciar Sesión</h2>
+
+  <i> Credenciales: admin/admin y trabajador/trabajador </i>
+  
+  <form method="POST" action="{% url 'login' %}">
+    {% csrf_token %}
+    <label>Usuario:</label><br>
+    <input type="text" name="usuario" id="usuario" required><br>
+    <label>Contraseña:</label><br>
+    <input type="password" name="clave" id="clave" required><br><br>
+    <button type="submit">Entrar</button>
+    <a href="#" onclick="mostrarPopupRecuperacion()">¿Olvidaste tu contraseña?</a>
+  </form>
+
+  {% if error %}
+  <p style="color:red;">{{ error }}</p>
+  {% endif %}
+
+  <!-- Popup de recuperación -->
+  <div id="popupRecuperar" style="display:none; position:fixed; top:30%; left:30%; background:white; padding:20px; border:1px solid gray;">
+    <p>Ingrese su correo para recuperar su contraseña (simulado):</p>
+    <input type="email" id="emailRecuperar" placeholder="correo@ejemplo.com">
+    <br><br>
+    <button onclick="enviarRecuperacion()">Enviar</button>
+    <button onclick="cerrarPopupRecuperacion()">Cerrar</button>
+  </div>
+
+  <script>
+    function mostrarPopupRecuperacion() {
+      document.getElementById("popupRecuperar").style.display = "block";
+    }
+
+    function cerrarPopupRecuperacion() {
+      document.getElementById("popupRecuperar").style.display = "none";
+    }
+
+    function enviarRecuperacion() {
+      const email = document.getElementById("emailRecuperar").value;
+      alert(`Se ha enviado un correo de recuperación a ${email}`);
+      cerrarPopupRecuperacion();
+    }
+  </script>
+</body>
+</html>

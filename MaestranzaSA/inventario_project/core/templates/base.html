@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Mi Aplicación{% endblock %}</title>
+
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" >
+</head>
+<body class="divprincipal">
+
+  <!-- Navbar -->
+  <nav id="navbar" class="center navbar navbar-expand-lg" style="display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                grid-template-rows: repeat(1, 1fr);
+                height: 100%;">
+    <div style="grid-column: span 2 / span 2;"> 
+      <h2> MAESTRANZAS S.A </h2>
+    </div>
+
+    <div class="container-fluid" style="grid-column: span 3 / span 3; grid-column-start: 3;">
+      <!-- Espacio para futuros elementos en navbar -->
+    </div>
+
+    <div style="grid-column-start: 6;">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <button class="btn btn-light" onclick="window.location='login.html'">Iniciar sesión</button>
+        </li>
+        <li class="nav-item">
+          <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+              <button type="submit" class="btn btn-light">Cerrar sesión</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <section id="sidebar">
+  <div class="center" style="padding-top: 20px;">
+    <h5 class="txtblanco"> Menú </h5>
+  </div>
+
+  <hr>
+
+  <!--Inventario.Paquetes y kits,Automatización,Gestión,Administración-->
+  <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+    <li>
+      <button onclick="window.location='inventario.html'" class="sidebarbtn">
+        icono
+      </button>
+    </li>
+    <div class="center">
+      <span class="txtblanco"> Inventario </span>
+    </div>
+
+    <li>
+      <button onclick="window.location='ensamblaje.html'" class="sidebarbtn">
+        icono
+      </button>
+    </li>
+    <div class="center">
+      <span class="txtblanco"> Ensamblaje </span>
+    </div>
+
+    <li>
+      <button onclick="window.location='automat.html'" class="sidebarbtn">
+        icono
+      </button>
+    </li>
+    <div class="center">
+      <span class="txtblanco"> Alertas </span>
+    </div>
+
+    <li>
+      <button onclick="window.location='gestion.html'" class="sidebarbtn">
+        icono
+      </button>
+    </li>
+    <div class="center">
+      <span class="txtblanco"> Gestion </span>
+    </div>
+
+    <li>
+      <button onclick="window.location='admin.html'" class="sidebarbtn">
+        icono
+      </button>
+    </li>
+    <div class="center">
+      <span class="txtblanco"> Administrar </span>
+    </div>
+  </ul>
+
+  <hr>
+
+  <div class="center" style="padding-top: 20px;">
+    <i> © Ñuoc </i>
+  </div>
+</section>
+
+  <!-- Contenido principal -->
+  <main id="main">
+    {% block content %}
+    <!-- Aquí va el contenido específico de cada página -->
+    {% endblock %}
+  </main>
+
+  <script src="{% static 'scripts/credentials.js' %}" defer></script>
+</body>
+</html>
