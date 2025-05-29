@@ -97,8 +97,10 @@ class UsuarioManager(BaseUserManager):
 
 class Usuarios(AbstractBaseUser, PermissionsMixin):
     usuario = models.CharField(max_length=255, unique=True)
-    email = models.EmailField(blank=True, null=True)
+    rut = models.CharField(max_length=12, unique=True)
+    contrasena = models.CharField(max_length=128) ## Debemos encritparlo más tarde
     rol = models.CharField(max_length=10)
+    email = models.EmailField(blank=True, null=True)
     intentos_fallidos = models.IntegerField(blank=True, null=True)
     bloqueado = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)

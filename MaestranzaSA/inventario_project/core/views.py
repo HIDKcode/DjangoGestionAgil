@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from .models import Usuarios
 
 def login_view(request):
     if request.method == 'POST':
@@ -10,7 +10,7 @@ def login_view(request):
             request.session['auth'] = True
             request.session['usuario'] = usuario
             request.session['rol'] = 'admin'
-            return redirect('inventario')  # usa el nombre correcto aquí
+            return redirect('administrar') 
 
         elif usuario == 'trabajador' and clave == 'trabajador':
             request.session['auth'] = True
@@ -26,26 +26,43 @@ def login_view(request):
 
 def logout_view(request):
     request.session.flush()
-    return redirect('/login')
+    return redirect('login')
+
 
 def inventario_view(request):
     if not request.session.get('auth'):
         return redirect('login')
     return render(request, 'inventario.html')
 
+
 def admin_view(request):
-    usuario_actual = request.session.get('usuario_id')
-    if not usuario_actual:
+    if not request.session.get('auth'):
         return redirect('login')
 
-    from .models import Usuarios
-    try:
-        usuario = Usuarios.objects.get(id=usuario_actual)
-    except Usuarios.DoesNotExist:
-        return redirect('login')
-
-    if usuario.rol != 'admin':
+    if request.session.get('rol') != 'admin':
         return redirect('no_acceso')
 
-    usuarios = Usuarios.objects.all()
-    return render(request, 'admin.html', {'usuarios': usuarios})
+    return render(request, 'admin.html')
+
+def usuarios_crear(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        rut = request.POST.get('rut')
+        contrasena = request.POST.get('contrasena')
+        rol = request.POST.get('rol')
+
+        if not (nombre and rut and contrasena and rol):
+            return render(request, 'usuarios/crear.html', {'error': 'Todos los campos son obligatorios'})
+
+        if Usuarios.objects.filter(rut=rut).exists():
+            return render(request, 'usuarios/crear.html', {'error': 'El RUT ya está registrado'})
+
+        Usuarios.objects.create(
+            nombre=nombre,
+            rut=rut,
+            contrasena=contrasena,  # Luego hay que ver para que no sea visible
+            rol=rol
+        )
+        return redirect('admin_view') 
+
+    return render(request, 'usuarios/crear.html')
