@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios{% endblock %}
+{% block content %}
+<h1>Administración de Usuarios</h1>
+<a href="{% url 'usuarios_crear' %}" class="btn btn-primary mb-3">Crear nuevo usuario</a>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>RUT</th>
+      <th>Rol</th>
+      <th>Intentos Fallidos</th>
+      <th>Bloqueado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in usuarios %}
+    <tr>
+      <td>{{ u.id }}</td>
+      <td>{{ u.rut }}</td>
+      <td>{{ u.get_rol_display }}</td>
+      <td>{{ u.intentos_fallidos }}</td>
+      <td>{% if u.bloqueado %}Sí{% else %}No{% endif %}</td>
+      <td>
+        <!-- Define más vistas para detalle, editar, eliminar si las implementas -->
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="text-center">No hay usuarios registrados.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<a href="{% url 'administrar' %}" class="btn btn-secondary"> Volver </a>
+{% endblock %}

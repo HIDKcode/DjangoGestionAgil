@@ -77,12 +77,16 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'inventario',
-        'USER': 'django1234',
-        'PASSWORD': 'django1234',
+        'USER': 'root',
+        'PASSWORD': 'Hideku123.',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '3306', 
     }
 }
+
+AUTHENTICATION_BACKENDS = [
+    'core.backends.RutBackend',
+]
 
 AUTH_USER_MODEL = 'core.Usuarios'
 

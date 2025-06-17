@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Alertas de Inventario</h1>
+
+  <h2>Stock bajo</h2>
+  {% if low_stock %}
+    <table>
+      <thead>
+        <tr><th>Pieza</th><th>Stock</th><th>Umbral</th></tr>
+      </thead>
+      <tbody>
+        {% for p in low_stock %}
+        <tr>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.stock }}</td>
+          <td>{{ p.umbral_minimo }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No hay piezas con stock bajo.</p>
+  {% endif %}
+
+  <h2>Vencimiento próximo (30 días)</h2>
+  {% if expiring_list %}
+    <table>
+      <thead>
+        <tr><th>Pieza</th><th>Fecha de venc.</th><th>Días restantes</th></tr>
+      </thead>
+      <tbody>
+        {% for item in expiring_list %}
+        <tr>
+          <td>{{ item.nombre }}</td>
+          <td>{{ item.fecha_vencimiento }}</td>
+          <td>{{ item.dias_restantes }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No hay piezas próximas a vencer en los siguientes 30 días.</p>
+  {% endif %}
+
+{% endblock %}

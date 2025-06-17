@@ -76,44 +76,53 @@ class Proveedores(models.Model):
 
 
 class UsuarioManager(BaseUserManager):
-    def create_user(self, usuario, clave=None, **extra_fields):
-        if not usuario:
-            raise ValueError("El usuario debe tener un nombre de usuario")
-        user = self.model(usuario=usuario, **extra_fields)
+    def create_user(self, rut, clave=None, **extra_fields):
+        if not rut:
+            raise ValueError("El RUT es obligatorio")
+        user = self.model(rut=rut, **extra_fields)
         user.set_password(clave)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, usuario, clave, **extra_fields):
+    def create_superuser(self, rut, clave, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('rol', 'admin')
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError("Superuser debe tener is_staff=True")
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError("Superuser debe tener is_superuser=True")
+        if not extra_fields.get('is_staff'):
+            raise ValueError("Superusuario debe tener is_staff=True")
+        if not extra_fields.get('is_superuser'):
+            raise ValueError("Superusuario debe tener is_superuser=True")
 
-        return self.create_user(usuario, clave, **extra_fields)
+        return self.create_user(rut, clave, **extra_fields)
+
 
 class Usuarios(AbstractBaseUser, PermissionsMixin):
-    usuario = models.CharField(max_length=255, unique=True)
+    ROLES = [
+        ('admin', 'Administrador'),
+        ('inventario', 'Gestor de Inventario'),
+        ('comprador', 'Comprador'),
+        ('logistica', 'Encargado de Logística'),
+        ('produccion', 'Jefe de Producción'),
+        ('auditor', 'Auditor de Inventario'),
+        ('gerente', 'Gerente de Proyectos'),
+        ('planta', 'Usuario Planta'),
+    ]
+
     rut = models.CharField(max_length=12, unique=True)
-    contrasena = models.CharField(max_length=128) ## Debemos encritparlo más tarde
-    rol = models.CharField(max_length=10)
-    email = models.EmailField(blank=True, null=True)
-    intentos_fallidos = models.IntegerField(blank=True, null=True)
+    rol = models.CharField(max_length=20, choices=ROLES, default='planta')
+    intentos_fallidos = models.IntegerField(default=0)
     bloqueado = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = UsuarioManager()
 
-    USERNAME_FIELD = 'usuario'
+    USERNAME_FIELD = 'rut'
     REQUIRED_FIELDS = []
 
     class Meta:
         db_table = 'usuarios'
 
     def __str__(self):
-        return self.usuario
+        return self.rut

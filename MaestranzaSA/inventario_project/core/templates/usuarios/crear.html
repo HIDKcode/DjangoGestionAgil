@@ -1,25 +1,39 @@
-<h2>Crear Nuevo Usuario</h2>
+{% extends 'base.html' %}
+{% block title %}Crear Usuario{% endblock %}
+{% block content %}
+<h1>Crear Usuario</h1>
 
 {% if error %}
-  <p style="color: red;">{{ error }}</p>
+  <div class="alert alert-danger">{{ error }}</div>
 {% endif %}
 
 <form method="post">
   {% csrf_token %}
-  <label for="nombre">Nombre:</label><br>
-  <input type="text" name="nombre" required><br><br>
-
-  <label for="rut">RUT:</label><br>
-  <input type="text" name="rut" required><br><br>
-
-  <label for="contrasena">Contraseña:</label><br>
-  <input type="password" name="contrasena" required><br><br>
-
-  <label for="rol">Rol:</label><br>
-  <select name="rol" required>
-    <option value="admin">Administrador</option>
-    <option value="trabajador">Trabajador</option>
-  </select><br><br>
-
-  <button type="submit">Crear Usuario</button>
+  <div class="mb-3">
+    <label for="rut" class="form-label">RUT</label>
+    <input type="text" class="form-control" id="rut" name="rut" required>
+  </div>
+  <div class="mb-3">
+    <label for="password" class="form-label">Contraseña</label>
+    <input type="password" class="form-control" id="password" name="password" required>
+  </div>
+  <div class="mb-3">
+    <label for="rol" class="form-label">Rol</label>
+    <select class="form-select" id="rol" name="rol">
+      {% for code, label in roles %}
+        <option value="{{ code }}">{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="bloqueado" name="bloqueado">
+    <label class="form-check-label" for="bloqueado">Bloqueado</label>
+  </div>
+  <div class="mb-3">
+    <label for="intentos" class="form-label">Intentos fallidos</label>
+    <input type="number" class="form-control" id="intentos" name="intentos" value="0">
+  </div>
+  <button type="submit" class="btn btn-success">Crear</button>
+  <a href="{% url 'administrar' %}" class="btn btn-secondary">Cancelar</a>
 </form>
+{% endblock %}
