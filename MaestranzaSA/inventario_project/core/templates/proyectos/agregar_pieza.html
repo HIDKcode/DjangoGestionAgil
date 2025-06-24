@@ -1,0 +1,26 @@
+<h1>Agregar pieza al proyecto: {{ proyecto.nombre }}</h1>
+
+<form method="post">
+  {% csrf_token %}
+  
+  <label for="pieza_id">Selecciona pieza:</label>
+  <select name="pieza_id" id="pieza_id" required>
+    <option value="">-- Selecciona --</option>
+    {% for pieza in piezas %}
+      <option value="{{ pieza.id }}">{{ pieza.nombre }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="cantidad">Cantidad:</label>
+  <input type="number" name="cantidad" id="cantidad" min="1" value="1" required>
+
+  <button type="submit">Agregar</button>
+</form>
+
+{% if messages %}
+  <ul>
+  {% for message in messages %}
+    <li>{{ message }}</li>
+  {% endfor %}
+  </ul>
+{% endif %}

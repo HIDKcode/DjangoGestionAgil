@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from datetime import date, timedelta
 from .decorators import rol_requerido
-from .models import Piezas
+from .models import Piezas, Usuarios, MovimientoInventario, Proyecto, AsignacionPieza
 from .forms import PiezasForm
-from .models import Usuarios
 from django.db.models import F
+from django.db import models
 
 def login_view(request):
     if request.method == 'POST':
@@ -28,11 +29,20 @@ def logout_view(request):
     return redirect('login')
 
 
-@login_required(login_url='login')
+@login_required
 def inventario_view(request):
-    piezas = Piezas.objects.select_related('proveedor').all()
+    categoria = request.GET.get('categoria')
+    piezas = Piezas.objects.select_related('proveedor')
+
+    if categoria:
+        piezas = piezas.filter(categoria=categoria)
+
+    categorias = Piezas.objects.values_list('categoria', flat=True).distinct()
+
     return render(request, 'inventario.html', {
-        'piezas': piezas
+        'piezas': piezas,
+        'categorias': categorias,
+        'categoria_actual': categoria,
     })
 
 @login_required
@@ -40,7 +50,13 @@ def pieza_crear(request):
     if request.method == 'POST':
         form = PiezasForm(request.POST)
         if form.is_valid():
-            form.save()
+            pieza = form.save()
+            MovimientoInventario.objects.create(
+                pieza=pieza,
+                accion='CREADO',
+                usuario=request.user,
+                observacion='Pieza registrada en el sistema.'
+            )
             return redirect('inventario')
     else:
         form = PiezasForm()
@@ -53,18 +69,16 @@ def pieza_editar(request, pieza_id):
         form = PiezasForm(request.POST, instance=pieza)
         if form.is_valid():
             form.save()
+            MovimientoInventario.objects.create(
+                pieza=pieza,
+                accion='EDITADO',
+                usuario=request.user,
+                observacion='Datos de la pieza actualizados.'
+            )
             return redirect('inventario')
     else:
         form = PiezasForm(instance=pieza)
     return render(request, 'piezas/pieza_form.html', {'form': form, 'accion': 'Editar'})
-
-@login_required
-def pieza_eliminar(request, pieza_id):
-    pieza = get_object_or_404(Piezas, id=pieza_id)
-    if request.method == 'POST':
-        pieza.delete()
-        return redirect('inventario')
-    return render(request, 'piezas/pieza_confirmar_eliminar.html', {'pieza': pieza})
 
 @login_required(login_url='login')
 def admin_view(request):
@@ -76,7 +90,7 @@ def admin_view(request):
 @login_required(login_url='login')
 @rol_requerido(['admin', 'gerente'])
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'login.html')
 
 @login_required(login_url='login')
 @rol_requerido(['admin'])
@@ -94,17 +108,88 @@ def compras_view(request):
 def logistica_view(request):
     return render(request, 'logistica.html')
 
+# seccion proyectos
 
-@login_required(login_url='login')
+@login_required
 @rol_requerido(['produccion', 'admin', 'gerente'])
-def produccion_view(request):
-    return render(request, 'produccion.html')
+def lista_proyectos(request):
+    proyectos = Proyecto.objects.all()
+    piezas = Piezas.objects.all()
+    return render(request, 'produccion.html', {
+        'proyectos': proyectos,
+        'piezas': piezas,
+    })
 
+@login_required
+@rol_requerido(['produccion', 'admin', 'gerente'])
+def crear_proyecto(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+
+        if nombre:
+            Proyecto.objects.create(nombre=nombre, descripcion=descripcion)
+            return redirect('lista_proyectos')
+
+    return render(request, 'crear_proyecto.html')
+
+@login_required
+@rol_requerido(['produccion', 'admin', 'gerente'])
+def asignar_piezas_proyecto(request, proyecto_id):
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+    piezas = Piezas.objects.all()
+
+    if request.method == 'POST':
+        pieza_id = request.POST.get('pieza_id')
+        cantidad = request.POST.get('cantidad')
+
+        if pieza_id and cantidad:
+            pieza = get_object_or_404(Piezas, id=pieza_id)
+            cantidad = int(cantidad)
+
+            asignacion, created = AsignacionPieza.objects.get_or_create(
+                proyecto=proyecto,
+                piezas=pieza,
+                defaults={'cantidad': cantidad}
+            )
+            if not created:
+                asignacion.cantidad = cantidad
+                asignacion.save()
+
+            messages.success(request, f'Pieza "{pieza.nombre}" asignada al proyecto "{proyecto.nombre}".')
+            return redirect('lista_proyectos')
+
+    return render(request, 'asignar_pieza.html', {
+        'proyecto': proyecto,
+        'piezas': piezas,
+    })
+
+@login_required
+@rol_requerido(['produccion', 'admin', 'gerente'])
+def crear_proyecto(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        fecha_inicio = request.POST.get('fecha_inicio')
+        fecha_fin = request.POST.get('fecha_fin')
+
+        Proyecto.objects.create(
+            nombre=nombre,
+            descripcion=descripcion,
+            fecha_inicio=fecha_inicio if fecha_inicio else None,
+            fecha_fin=fecha_fin if fecha_fin else None,
+        )
+        return redirect('lista_proyectos')  # o la url que muestra la lista
+
+    # Si quieres también manejar GET y mostrar formulario, devuelve render
+    return render(request, 'crear_proyecto.html')
+# fin seccion proyectos
 
 @login_required(login_url='login')
 @rol_requerido(['auditor', 'admin', 'gerente'])
 def auditoria_view(request):
-    return render(request, 'auditoria.html')
+    historial = MovimientoInventario.objects.select_related('pieza', 'usuario').order_by('-fecha')[:50]
+    return render(request, 'auditoria.html',{'historial': historial})
 
 
 @login_required(login_url='login')

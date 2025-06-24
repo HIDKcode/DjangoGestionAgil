@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Crear Proyecto</title>
+</head>
+<body>
+    <h1>Crear Proyecto</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label>Nombre:</label><input type="text" name="nombre" /><br/>
+        <label>Descripción:</label><textarea name="descripcion"></textarea><br/>
+        <button type="submit">Crear</button>
+    </form>
+</body>
+</html>

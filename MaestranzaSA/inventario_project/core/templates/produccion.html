@@ -12,8 +12,61 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" >
 
 <h1> Producción </h1>
-<p> Aquí puedes mostrar [---]. </p>
 
-<!-- Aquí podrías poner tablas, formularios, botones, etc. -->
+<h2>Crear nuevo proyecto</h2>
+<form method="post" action="{% url 'crear_proyecto' %}">
+  {% csrf_token %}
+  <label for="nombre">Nombre:</label>
+  <input type="text" id="nombre" name="nombre" required>
 
+  <label for="descripcion">Descripción:</label>
+  <textarea id="descripcion" name="descripcion"></textarea>
+
+  <label for="fecha_inicio">Fecha Inicio:</label>
+  <input type="date" id="fecha_inicio" name="fecha_inicio">
+
+  <label for="fecha_fin">Fecha Fin:</label>
+  <input type="date" id="fecha_fin" name="fecha_fin">
+
+  <button type="submit">Crear Proyecto</button>
+</form>
+
+<hr>
+
+<!-- Lista de proyectos existentes -->
+<h2>Proyectos existentes</h2>
+<ul>
+  {% for proyecto in proyectos %}
+  <li>
+    <strong>{{ proyecto.nombre }}</strong> — {{ proyecto.descripcion }}<br>
+    Fechas: {{ proyecto.fecha_inicio }} - {{ proyecto.fecha_fin }}
+
+    <!-- Form para asignar piezas -->
+    <form method="post" action="{% url 'asignar_piezas_proyecto' proyecto.id %}">
+      {% csrf_token %}
+      <label for="pieza">Agregar pieza:</label>
+      <select name="pieza_id" id="pieza">
+        {% for pieza in piezas %}
+        <option value="{{ pieza.id }}">{{ pieza.nombre }}</option>
+        {% endfor %}
+      </select>
+      <label for="cantidad">Cantidad:</label>
+      <input type="number" name="cantidad" id="cantidad" min="1" value="1" required>
+      <button type="submit">Agregar</button>
+    </form>
+
+    <!-- Mostrar piezas asignadas -->
+    <h4>Piezas asignadas:</h4>
+    <ul>
+      {% for pieza in proyecto.piezas.all %}
+      <li>{{ pieza.nombre }} (Cantidad: {{ pieza.cantidad }})</li>
+      {% empty %}
+      <li>No hay piezas asignadas</li>
+      {% endfor %}
+    </ul>
+  </li>
+  {% empty %}
+  <li>No hay proyectos creados aún.</li>
+  {% endfor %}
+</ul>
 {% endblock %}
